@@ -1,34 +1,74 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
+import NewProject from './components/NewProject'
+import NoProjectSelected from './components/NoProjectSelected'
+import ProjectsSidebar from './components/ProjectsSidebar'
+import { useState } from 'react'
+import SelectedProject from "./components/SelectedProject"
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [projectsState, setProjectsState] = useState({
+    selectedProjectId : undefined,
+    projects: []
+  })
+
+
+function handleSelectProject(id) {
+  setProjectsState(prevState => {
+    return {
+      ...prevState,
+      selectedProjectId : id,
+    }
+  });
+}
+
+function handleStartAddProject() {
+  setProjectsState(prevState => {
+    return {
+      ...prevState,
+      selectedProjectId : null,
+    }
+  });
+}
+function handleCancelAddProject() {
+  setProjectsState(prevState => {
+    return {
+      ...prevState,
+      selectedProjectId : undefined,
+    }
+  });
+}
+
+function handleAddProject(projectData){
+  setProjectsState(prevState => {
+    const projectId = Math.random();
+    const NewProject = {
+     ...projectData,
+     id: projectId
+    }
+    return {
+      ...prevState,
+      selectedProjectId: undefined,
+      projects:[...prevState.projects, NewProject ]
+    }
+  })
+}
+
+const selectedProject = projectsState.projects.find(project=> project.id === projectsState.selectedProjectId)
+
+let content= <SelectedProject project={selectedProject}/>;
+
+if(projectsState.selectedProjectId === null){
+  content = <NewProject onAdd={handleAddProject} onCancel={handleCancelAddProject}/>
+} else if(projectsState.selectedProjectId === undefined){
+  content = <NoProjectSelected onStartAddProject={handleStartAddProject}/>
+}
+
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <main className="h-screen my-8 flex gap-8">
+    <ProjectsSidebar onSelectProject={handleSelectProject} onStartAddProject={handleStartAddProject} projects={projectsState.projects} />
+    {content}
+    </main>
   )
 }
 
